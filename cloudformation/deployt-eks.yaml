@@ -1,0 +1,523 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+    Phan Van Thuy - Project Flask App
+Parameters:
+    EnvironmentName:
+        Description: EnvironmentName Project Capstone
+        Type: String
+        Default: ProjectFlaskApp
+    VpcCIDR: 
+        Description: IP range (CIDR notation) for this VPC
+        Type: String
+        Default: 10.0.0.0/16
+
+    PublicSubnet1CIDR:
+        Description: IP range (CIDR notation) for the public subnet 1 in the first Availability Zone
+        Type: String
+        Default: 10.0.0.0/24
+    PublicSubnet2CIDR:
+        Description: IP range (CIDR notation) for the public subnet 2 in the first Availability Zone
+        Type: String 
+        Default: 10.0.1.0/24
+
+    PublicSubnet3CIDR:
+        Description: IP range (CIDR notation) for the public subnet 2 in the first Availability Zone
+        Type: String 
+        Default: 10.0.2.0/24
+
+    PrivateSubnet1CIDR:
+        Description: IP range (CIDR notation) for the private subnet 1 in the first Availability Zone
+        Type: String
+        Default: 10.0.3.0/24
+    PrivateSubnet2CIDR:
+        Description: IP range (CIDR notation) for the private subnet 2 in the first Availability Zone
+        Type: String
+        Default: 10.0.4.0/24
+    PrivateSubnet3CIDR:
+        Description: IP range (CIDR notation) for the private subnet 2 in the first Availability Zone
+        Type: String
+        Default: 10.0.5.0/24
+    AMItoUse:
+        Description: AMI to use for our base image
+        Type: String
+        Default: ami-08581e2e50ad52e16
+    KeyPairName:
+        Description: KeyPar for EC2
+        Type: String
+        Default: flask-app
+
+###########Config###########
+
+Resources:
+
+## Config Network
+    VPC:
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock:  !Ref VpcCIDR
+            EnableDnsHostnames: true 
+            Tags:
+                - Key: Name 
+                  Value: !Ref EnvironmentName
+
+    InternetGateway:
+        Type: AWS::EC2::InternetGateway
+        Properties:
+            Tags:
+                - Key: Name
+                  Value: !Ref EnvironmentName
+ 
+    InternetGatewayAttachment:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+            InternetGatewayId: !Ref InternetGateway
+            VpcId: !Ref VPC
+
+    PublicSubnet1: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 0, !GetAZs '' ]
+            CidrBlock: !Ref PublicSubnet1CIDR
+            MapPublicIpOnLaunch: true
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName}-PUB1-SN
+
+    PublicSubnet2: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 1, !GetAZs '' ]
+            CidrBlock: !Ref PublicSubnet2CIDR
+            MapPublicIpOnLaunch: true
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName}-PUB2-SN
+
+    PublicSubnet3: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 2, !GetAZs '' ]
+            CidrBlock: !Ref PublicSubnet3CIDR
+            MapPublicIpOnLaunch: true
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName}-PUB3-SN
+
+    PrivateSubnet1: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 0, !GetAZs '' ]
+            CidrBlock: !Ref PrivateSubnet1CIDR
+            MapPublicIpOnLaunch: false
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName}-PRIV-NET1
+
+    PrivateSubnet2: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 1, !GetAZs '' ]
+            CidrBlock: !Ref PrivateSubnet2CIDR
+            MapPublicIpOnLaunch: false
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName}-PRIV-NET2
+
+    PrivateSubnet3: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 2, !GetAZs '' ]
+            CidrBlock: !Ref PrivateSubnet3CIDR
+            MapPublicIpOnLaunch: false
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName}-PRIV-NET3
+
+    NatGatewayEIP1:
+        Type: AWS::EC2::EIP
+        DependsOn: InternetGatewayAttachment
+        Properties:
+            Domain: vpc 
+
+    NatGatewayEIP2:
+        Type: AWS::EC2::EIP
+        DependsOn: InternetGatewayAttachment
+        Properties:
+            Domain: vpc 
+
+    NatGatewayEIP3:
+        Type: AWS::EC2::EIP
+        DependsOn: InternetGatewayAttachment
+        Properties:
+            Domain: vpc 
+
+    NatGateway1:
+        Type: AWS::EC2::NatGateway
+        Properties:
+          AllocationId: !GetAtt NatGatewayEIP1.AllocationId
+          SubnetId: !Ref PublicSubnet1
+
+    
+    NatGateway2:
+        Type: AWS::EC2::NatGateway
+        Properties:
+          AllocationId: !GetAtt NatGatewayEIP2.AllocationId
+          SubnetId: !Ref PublicSubnet2
+
+    NatGateway3:
+        Type: AWS::EC2::NatGateway
+        Properties:
+          AllocationId: !GetAtt NatGatewayEIP3.AllocationId
+          SubnetId: !Ref PublicSubnet3
+
+    PublicRouteTable1:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref VPC 
+          Tags:
+            - Key: Name
+              Value: !Sub ${EnvironmentName} Public Routes(AZ1)
+
+    PublicRouteTable2:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref VPC 
+          Tags:
+            - Key: Name
+              Value: !Sub ${EnvironmentName} Public Routes(AZ2)
+
+    PublicRouteTable3:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref VPC 
+          Tags:
+            - Key: Name
+              Value: !Sub ${EnvironmentName} Public Routes(AZ3)
+
+    DefaultPublicRoute1:
+        Type: AWS::EC2::Route
+        DependsOn: InternetGatewayAttachment
+        Properties:
+          RouteTableId: !Ref PublicRouteTable1
+          DestinationCidrBlock: 0.0.0.0/0
+          GatewayId: !Ref InternetGateway
+
+    DefaultPublicRoute2:
+        Type: AWS::EC2::Route
+        DependsOn: InternetGatewayAttachment
+        Properties:
+          RouteTableId: !Ref PublicRouteTable2
+          DestinationCidrBlock: 0.0.0.0/0
+          GatewayId: !Ref InternetGateway
+
+    DefaultPublicRoute3:
+        Type: AWS::EC2::Route
+        DependsOn: InternetGatewayAttachment
+        Properties:
+          RouteTableId: !Ref PublicRouteTable3
+          DestinationCidrBlock: 0.0.0.0/0
+          GatewayId: !Ref InternetGateway
+
+    PublicSubnet1RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+          RouteTableId: !Ref PublicRouteTable1
+          SubnetId: !Ref PublicSubnet1
+        
+    PublicSubnet2RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+          RouteTableId: !Ref PublicRouteTable2
+          SubnetId: !Ref PublicSubnet2
+
+    PublicSubnet3RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+          RouteTableId: !Ref PublicRouteTable3
+          SubnetId: !Ref PublicSubnet3
+
+    PrivateRouteTable1:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref VPC
+          Tags: 
+            - Key: Name
+              Value: !Sub ${EnvironmentName} Private Routes (AZ1)
+
+    PrivateRouteTable2:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref VPC
+          Tags: 
+            - Key: Name
+              Value: !Sub ${EnvironmentName} Private Routes (AZ2)
+
+    PrivateRouteTable3:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref VPC
+          Tags: 
+            - Key: Name
+              Value: !Sub ${EnvironmentName} Private Routes (AZ3)
+
+    DefaultPrivateRoute1:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable1
+            DestinationCidrBlock: 0.0.0.0/0
+            NatGatewayId: !Ref NatGateway1
+
+    DefaultPrivateRoute2:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable2
+            DestinationCidrBlock: 0.0.0.0/0
+            NatGatewayId: !Ref NatGateway2
+
+    DefaultPrivateRoute3:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable3
+            DestinationCidrBlock: 0.0.0.0/0
+            NatGatewayId: !Ref NatGateway3
+
+    PrivateSubnet1RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable1
+            SubnetId: !Ref PrivateSubnet1
+
+    PrivateSubnet2RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable2
+            SubnetId: !Ref PrivateSubnet2
+
+    PrivateSubnet3RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable3
+            SubnetId: !Ref PrivateSubnet3
+################ config EKS ####################
+###Role###
+    ControlPlaneRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                            - eks.amazonaws.com
+                    Action: sts:AssumeRole
+            Path: "/"
+            ManagedPolicyArns: 
+              - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+              - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+
+    ControlPlaneSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Allow for EKS
+            VpcId: !Ref VPC
+            GroupName: "UdacityProject-Capstone"
+            SecurityGroupIngress:
+            - IpProtocol: tcp
+              FromPort: 10250
+              ToPort: 10250
+              CidrIp: 0.0.0.0/0
+            - IpProtocol: tcp
+              FromPort: 443
+              ToPort: 443
+              CidrIp: 0.0.0.0/0
+            - IpProtocol: tcp
+              FromPort: 53
+              ToPort: 53
+              CidrIp: 0.0.0.0/0
+            - IpProtocol: tcp
+              FromPort: 22
+              ToPort: 22
+              CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+            - IpProtocol: -1
+              FromPort: -1
+              ToPort: -1
+              CidrIp: 0.0.0.0/0
+            Tags:
+              - Key: Name
+                Value: UdacityProjectSecurityGroup
+    
+    ControlPlane:
+        Type: AWS::EKS::Cluster
+        Properties:
+            Name: !Ref AWS::StackName
+            Version: "1.30"
+            RoleArn: !GetAtt ControlPlaneRole.Arn
+            ResourcesVpcConfig:
+                SecurityGroupIds:
+                    - !Ref ControlPlaneSecurityGroup
+                SubnetIds:
+                    - !Ref PrivateSubnet1
+                    - !Ref PrivateSubnet2
+                    - !Ref PrivateSubnet3
+
+################################# Config Worker Node #################################
+##role
+    WorkerNodesRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                            - ec2.amazonaws.com
+                    Action: sts:AssumeRole
+            Path: "/"
+            ManagedPolicyArns: 
+              - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+              - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+              - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+
+    WorkerNodesInstanceProfile:
+        Type: AWS::IAM::InstanceProfile
+        Properties:
+            Path: "/"
+            Roles:
+                - !Ref WorkerNodesRole
+
+    WorkerNodesSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Security group for the nodes.
+            VpcId: !Ref VPC
+            SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 0
+                ToPort: 65535
+                CidrIp: 0.0.0.0/0
+              - IpProtocol: tcp
+                FromPort: 1025
+                ToPort: 65535
+                CidrIp: 0.0.0.0/0
+              - IpProtocol: tcp
+                FromPort: 443
+                ToPort: 443
+                CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+              - IpProtocol: tcp
+                FromPort: 0
+                ToPort: 65535
+                CidrIp: 0.0.0.0/0
+              - IpProtocol: tcp
+                FromPort: 1025
+                ToPort: 65535
+                CidrIp: 0.0.0.0/0
+              - IpProtocol: tcp
+                FromPort: 443
+                ToPort: 443
+                CidrIp: 0.0.0.0/0
+            Tags:
+              - Key: !Sub
+                  - "kubernetes.io/cluster/${ControlPlane}"
+                  - EksId: !Ref ControlPlane
+                Value: "owned"
+
+    WorkerNodegroup:
+      Type: AWS::EKS::Nodegroup
+      DependsOn: ControlPlane
+      Properties:
+        ClusterName: !Sub "${AWS::StackName}"
+        NodeRole: !GetAtt WorkerNodesRole.Arn
+        ScalingConfig:
+          MinSize: 2
+          DesiredSize: 3
+          MaxSize: 3
+        Subnets:
+                - !Ref PrivateSubnet1
+                - !Ref PrivateSubnet2
+                - !Ref PrivateSubnet3
+
+
+    WorkerNodesAutoScalingGroup:
+        Type: AWS::AutoScaling::AutoScalingGroup
+        DependsOn: ControlPlane
+        Properties:
+            LaunchConfigurationName: !Ref WorkerNodesLaunchConfiguration
+            MinSize: 3
+            MaxSize: 3
+            VPCZoneIdentifier:
+                - !Ref PrivateSubnet1
+                - !Ref PrivateSubnet2
+                - !Ref PrivateSubnet3
+            Tags:
+              - Key: Name
+                Value: !Sub "${ControlPlane}-ASG"
+                PropagateAtLaunch: "true"
+              - Key: !Sub "kubernetes.io/cluster/${ControlPlane}"
+                Value: "owned"
+                PropagateAtLaunch: "true"
+        UpdatePolicy:
+            AutoScalingRollingUpdate:
+                MinInstancesInService: 3
+                MaxBatchSize: 3
+
+    WorkerNodesLaunchConfiguration:
+        Type: AWS::AutoScaling::LaunchConfiguration
+        DependsOn: ControlPlane
+        Properties:
+            AssociatePublicIpAddress: "true"
+            IamInstanceProfile: !Ref WorkerNodesInstanceProfile
+            ImageId: !Ref AMItoUse
+            InstanceType: t2.medium
+            KeyName: !Ref KeyPairName
+            SecurityGroups:
+                - !Ref WorkerNodesSecurityGroup
+            BlockDeviceMappings:
+                - DeviceName: /dev/xvda
+                  Ebs:
+                    VolumeSize: 10
+                    VolumeType: gp2
+                    DeleteOnTermination: true
+            UserData:
+                Fn::Base64: !Sub |
+                    #!/bin/bash
+                    /usr/bin/ping -c 5 8.8.8.8 
+                    set -o xtrace
+                    /etc/eks/bootstrap.sh ${ControlPlane}
+                    /opt/aws/bin/cfn-signal --exit-code $? --stack  ${AWS::StackName} --resource WorkerNodegroup --region ${AWS::Region}
+
+
+############################Output############################
+Outputs:
+    VpcId:
+        Value: !Ref VPC
+        Description: VPC ID
+        Export:
+            Name: !Sub "${EnvironmentName}-VpcId"
+
+    ControlPlane:
+        Value: !Ref ControlPlane
+        Description: ControlPlane ID
+        Export:
+            Name: !Sub "${EnvironmentName}-ControlPlane"
+
+    ControlPlaneRole:
+        Description: role Kubernetes clusters
+        Value: !GetAtt ControlPlaneRole.Arn
+        Export:
+            Name: !Sub "${EnvironmentName}-CPR"
+
+    WorkerNodesRole: 
+        Description: role WorkerNodes
+        Value: !GetAtt WorkerNodesRole.Arn
+        Export:
+            Name: !Sub "${EnvironmentName}-WNR"  
