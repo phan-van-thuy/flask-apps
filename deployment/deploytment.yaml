@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       labels:
-        app: app
+        app: flask-app
     spec:
       containers:
         - image: CONTAINER_IMAGE
