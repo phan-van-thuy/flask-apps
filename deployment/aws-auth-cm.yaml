@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 data:
   mapRoles: |
-    - rolearn: arn:aws:iam::567714418050:role/flask-apps-ControlPlaneRole-sfEzbMohakrx
+    - rolearn: arn:aws:iam::567714418050:role/flask-apps-WorkerNodesRole-eL26rZmFxqEW
       username: system:node:{{EC2PrivateDNSName}}
       groups:
         - system:bootstrappers

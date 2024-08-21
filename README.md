@@ -1,29 +1,51 @@
-# Meme Generator Project
+# Deploy Your Flask App to Kubernetes Using EKS
 
 ## Overview
-This project generates memes with quotes using a web application and command line interface. It supports ingesting quotes from various file formats including TXT, DOCX, PDF, and CSV, and generates images with captions using the Pillow library.
+This is the project starter repo for the course Server Deployment, Containerization, and Testing.
 
-## Setup Instructions
-# Create Stack Using AWS
-## Create role 
-aws iam create-role --role-name RoleFlaskDeploy --assume-role-policy-document file://trust.json --output text --query 'Role.Arn'
+In this project we will containerize and deploy a Flask API to a Kubernetes cluster using Docker, AWS EKS, CodePipeline, and CodeBuild.
+
+# Initial setup
+## Create Stack Using aws command line
+
+### Create an EKS cluster using CloudFormation Stack
+To understand the problem in depth, we will create kubernetes cluster principals through CloudFormation
+
+    ```sh
+    aws cloudformation deploy --template-file  .\cloudformation\deployt-eks.yaml --stack-name flask-apps --tags project=flaskapp --capabilities CAPABILITY_NAMED_IAM
+    ```
+    ```sh
+    ├── cloudformation/
+    │ ├── deployt-eks.yaml
+    │ └── server-parameters.json
+    ```
+
+### Create role 
+    ```sh
+    aws iam create-role --role-name RoleFlaskDeploy --assume-role-policy-document file://trust.json --output text --query 'Role.Arn'
+    ```
 ## Put policy for role
-aws iam put-role-policy --role-name UdacityFlaskDeployCBKubectlRole --policy-name eks-describe --policy-document file://iam-role-policy.json
-## Create Cluster Kubernetes using CloudFormation stack
-aws cloudformation deploy --template-file  .\cloudformation\deployt-eks.yaml --stack-name flask-apps --tags project=flaskapp --capabilities CAPABILITY_NAMED_IAM
-## Create stack for code pipeline
-aws cloudformation create-stack --stack-name codepipeline-stack   --template-body file://ci-cd-codepipeline.cfn.yml  --capabilities CAPABILITY_NAMED_IAM  --parameters ParameterKey=GitHubToken,ParameterValue=""
+    ```sh
+    aws iam put-role-policy --role-name UdacityFlaskDeployCBKubectlRole --policy-name eks-describe --policy-document file://iam-role-policy.json
+    ``` 
+
+## Create stack for codepipeline
+    ```sh
+    aws cloudformation create-stack --stack-name codepipeline-stack   --template-body file://ci-cd-codepipeline.cfn.yml  --capabilities CAPABILITY_NAMED_IAM  --parameters ParameterKey=GitHubToken,ParameterValue=""
+    ``` 
+
+##
 
 ### Prerequisites
-- Python 3.6+
+- Python 3.7
 - pip
 
-### Installation
+### Build and test the container locally
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/phan-van-thuy/advanced-python-project-02.git
-    cd advanced-python-project-02
+    git clone https://github.com/phan-van-thuy/flask-apps
+    cd flask-apps
     ```
 
 2. Create and activate a virtual environment:
@@ -41,25 +63,12 @@ aws cloudformation create-stack --stack-name codepipeline-stack   --template-bod
     ```sh
     pip install -r requirements.txt
     ```
-
-### Running the Web Application
-
-1. Start the Flask server:
+4. Run Flask App on local computer
     ```sh
     python app.py
     ```
-
-2. Open a web browser and navigate to `http://127.0.0.1:5000`.
-
-### Generating a Meme via CLI
-
-1. Use the `meme.py` script to generate a meme:
-    ```sh
-    python meme.py --path ./_data/photos/vietnam/xander_1.jpg --body "Sample Quote" --author "Author"
-    ```
-
 ## Project Structure
-advanced-python-project-02/
+sources/
 │
 ├── QuoteEngine/
 │ ├── init.py
@@ -100,23 +109,4 @@ advanced-python-project-02/
 ├── app.py
 ├── meme.py
 ├── requirements.txt
-└── README.md
-
-
-## Sub-modules
-
-### QuoteEngine
-- **IngestorInterface.py**: Abstract base class defining the interface for all ingestors.
-- **TextIngestor.py**: Ingests quotes from TXT files.
-- **DocxIngestor.py**: Ingests quotes from DOCX files.
-- **PDFIngestor.py**: Ingests quotes from PDF files.
-- **CSVIngestor.py**: Ingests quotes from CSV files.
-- **QuoteModel.py**: Defines the QuoteModel class representing a quote with body and author.
-
-### MemeEngine
-- **MemeEngine.py**: Handles the creation of memes by adding text to images.
-
-## Dependencies
-All dependencies are listed in the `requirements.txt` file and can be installed using:
-```sh
-pip install -r requirements.txt
+└── Dockerfile
