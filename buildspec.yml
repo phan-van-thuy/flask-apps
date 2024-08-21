@@ -39,15 +39,13 @@ phases:
     #   - make lint
   build:
     commands:
-      - cd sources
-      - docker build --tag $REPOSITORY_URI:$TAG .
+      - docker build . --tag $REPOSITORY_URI:$TAG -f ./sources/Dockerfile
   post_build:
     commands:
       - docker push $REPOSITORY_URI:$TAG
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $EKS_KUBECTL_ROLE_ARN
 #      - kubectl apply -f deployment/aws-auth-cm.yaml
-      - cd deployment
-      - kubectl apply -f deploytment.yaml
+      - kubectl apply -f ./deployment/deploytment.yaml
       - printf '[{"name":"flask-app","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
 artifacts:
   files: build.json
