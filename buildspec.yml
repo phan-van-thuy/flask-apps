@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-    on-failure: CONTINUE
+#    on-failure: CONTINUE
       python: 3.11
     commands:
       - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
@@ -38,6 +38,7 @@ phases:
       - make lint
   build:
     commands:
+      - cd sources
       - docker build --tag $REPOSITORY_URI:$TAG .
   post_build:
     commands:
