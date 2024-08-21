@@ -24,7 +24,8 @@ phases:
   pre_build:
     commands:
       - TAG="$REPOSITORY_NAME.$REPOSITORY_BRANCH.$ENVIRONMENT_NAME.$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' deployment/deploytment.yaml
+      - cd deployment
+      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' deploytment.yaml
       - $(aws ecr get-login --no-include-email)
       - export KUBECONFIG=$HOME/.kube/config
       # - echo `ls -l`
@@ -45,7 +46,8 @@ phases:
       - docker push $REPOSITORY_URI:$TAG
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $EKS_KUBECTL_ROLE_ARN
 #      - kubectl apply -f deployment/aws-auth-cm.yaml
-      - kubectl apply -f deployment/deploytment.yaml
+      - cd deployment
+      - kubectl apply -f deploytment.yaml
       - printf '[{"name":"flask-app","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
 artifacts:
   files: build.json
