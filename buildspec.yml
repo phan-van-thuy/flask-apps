@@ -40,13 +40,13 @@ phases:
     #   - make lint
   build:
     commands:
+      - cd ../sources
       - ls
-      - cd sources
       - docker build --tag $REPOSITORY_URI:$TAG .
   post_build:
     commands:
+      - cd ../deployment
       - ls
-      - cd deployment
       - docker push $REPOSITORY_URI:$TAG
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $EKS_KUBECTL_ROLE_ARN
 #      - kubectl apply -f deployment/aws-auth-cm.yaml
