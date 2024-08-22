@@ -58,6 +58,9 @@ aws cloudformation create-stack --stack-name codepipeline-stack   --template-bod
     python meme.py --path ./_data/photos/vietnam/xander_1.jpg --body "Sample Quote" --author "Author"
     ```
 
+## URL OF SVC EXTERNAL-IP FLASK APP
+    aa68fcfd9313c4de2aff8d349c69a3ae-172488418.us-east-1.elb.amazonaws.com
+
 ## Project Structure
 advanced-python-project-02/
 │
