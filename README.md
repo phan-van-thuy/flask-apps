@@ -110,6 +110,6 @@ $
 ## The API successfully runs from EKS.
 
 ### URL OF SVC EXTERNAL-IP FLASK APP
-    aa68fcfd9313c4de2aff8d349c69a3ae-172488418.us-east-1.elb.amazonaws.com
+    http://a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com/
 
 ### The AWS LOADBALANCERR run and endpoints respond.

@@ -30,13 +30,14 @@ phases:
       - export KUBECONFIG=$HOME/.kube/config
       - cd ../sources
       - echo `ls -l`
-      - pip install -r requirements.txt
+      - pip3 install -r requirements.txt
+      - pytest test_main.py --disable-warnings
+
   build:
     commands:
       - cd ../sources
       - ls
       - docker build --tag $REPOSITORY_URI:$TAG .
-      - pytest test_main.py --disable-warnings
   post_build:
     commands:
       - cd ../deployment
