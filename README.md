@@ -113,3 +113,42 @@ $
     http://a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com/
 
 ### The AWS LOADBALANCERR run and endpoints respond.
+
+#### Command Curl API successfully runs from EKS.
+    ```sh
+    curl --request GET 'http://a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com/' "Healthy"
+
+    TOKEN=$(curl --data '{"email":"thuypv@fpt.com","password":"ThuYPV"}' --header "Content-Type: application/json" -X POST a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com//auth | jq -r '.token')
+
+    echo $TOKEN
+    
+    curl --request GET 'http://a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com/contents' -H "Authorization: Bearer ${TOKEN}" | jq .
+    ```
+
+Administrator@DESKTOP-2361KFI MINGW64 ~/Desktop/AWS-Lerning/Flask-App-EKS (master)
+$ curl --request GET 'http://a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com/' "Healthy"
+"Healthy"
+curl: (6) Could not resolve host: Healthy
+
+Administrator@DESKTOP-2361KFI MINGW64 ~/Desktop/AWS-Lerning/Flask-App-EKS (master)
+$ TOKEN=$(curl --data '{"email":"thuypv@fpt.com","password":"ThuYPV"}' --header "Content-Type: application/json" -X POST a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com//auth | jq -r '.token')
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   220  100   174  100    46    207     54 --:--:-- --:--:-- --:--:--   263
+
+Administrator@DESKTOP-2361KFI MINGW64 ~/Desktop/AWS-Lerning/Flask-App-EKS (master)
+$ echo $TOKEN
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjU2MTU5NzUsIm5iZiI6MTcyNDQwNjM3NSwiZW1haWwiOiJ0aHV5cHZAZnB0LmNvbSJ9.P9GyWOBiaDWT1pAvGNF4enHKbZvL_AilzUYSPMDhggY
+
+Administrator@DESKTOP-2361KFI MINGW64 ~/Desktop/AWS-Lerning/Flask-App-EKS (master)
+$ curl --request GET 'http://a7c9fb55812a14821bad21378cc9d1b3-1938625866.us-east-1.elb.amazonaws.com/contents' -H "Authorization: Bearer ${TOKEN}" | jq .
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    61  100    61    0     0     93      0 --:--:-- --:--:-- --:--:--    94
+{
+  "email": "thuypv@fpt.com",
+  "exp": 1725615975,
+  "nbf": 1724406375
+}
+
+Administrator@DESKTOP-2361KFI MINGW64 ~/Desktop/AWS-Lerning/Flask-App-EKS (master)
