@@ -5,12 +5,12 @@ metadata:
   namespace: kube-system
 data:
   mapRoles: |
-    - rolearn: arn:aws:iam::567714418050:role/flask-apps-ControlPlaneRole-sfEzbMohakrx
+    - rolearn: arn:aws:iam::785859435606:role/flask-apps-WorkerNodesRole-CE30xx5CIOQU
       username: system:node:{{EC2PrivateDNSName}}
       groups:
         - system:bootstrappers
         - system:nodes
-    - rolearn: arn:aws:iam::567714418050:role/UdacityFlaskDeployCBKubectlRole
+    - rolearn: arn:aws:iam::785859435606:role/UdacityFlaskDeployCBKubectlRole
       username: build
       groups:
         - system:masters
