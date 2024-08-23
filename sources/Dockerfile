@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:stretch
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -12,7 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 WORKDIR /app
 
-EXPOSE 80
-
-ENTRYPOINT ["python", "app.py"]
-
+ENTRYPOINT ["gunicorn", "-b", ":8080", "main:APP"]
